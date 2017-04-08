@@ -16,9 +16,9 @@ def read_csv_file():
     with open('train.csv','rb') as csvFile:
         rd = csv.reader(csvFile)
         for row in rd:
-            row_vec = [float(i) for i in row]
-            trainSet_labels.append(row_vec.pop(0))
-            trainSet_features.append(row_vec)
+            row_float = [float(i) for i in row]
+            trainSet_labels.append(row_float.pop(0))
+            trainSet_features.append(row_float)
 
         global n_train_samples
         n_train_samples = len(trainSet_labels)
@@ -31,9 +31,9 @@ def read_csv_file():
     with open('test.csv','rb') as csvFile:
         rd = csv.reader(csvFile)
         for row in rd:
-            rowvec = [float(i) for i in row]
-            testSet_labels.append(rowvec.pop(0))
-            testSet_features.append(rowvec)
+            row_float = [float(i) for i in row]
+            testSet_labels.append(row_float.pop(0))
+            testSet_features.append(row_float)
 
         global n_test_samples
         n_test_samples = len(testSet_labels)
@@ -46,9 +46,37 @@ def main():
     # read the CSV files
     read_csv_file()
 
+    # optimize hidden layers
+    print("Optimizing number of hidden layers")
+    scores = {}
+    n_Iter = 10
+    for n_h_l in range(10, 150, 10):
+        avg_acc = 0;
+        for i in range(n_Iter):
+            mlp = MLPClassifier(solver = 'sgd', alpha=1e-5, hidden_layer_sizes=(n_h_l,), random_state=1)
+            mlp.fit(trainSet_features, trainSet_labels)
+            avg_acc += mlp.score(testSet_features, testSet_labels)
+        scores[n_h_l] = avg_acc/n_Iter
+
+    opt_n_h_l = scores.get(max(scores))
+
+    # optimize learning rate
+    print("Optimizing learning rate")
+    scores = {}
+    n_Iter = 10
+    for l in range(0.1,1,0.1):
+        avg_acc = 0;
+        for i in range(n_Iter):
+            mlp = MLPClassifier(solver='sgd', learning_rate=l, alpha=1e-5, hidden_layer_sizes=(opt_n_h_l,), random_state=1)
+            mlp.fit(trainSet_features, trainSet_labels)
+            avg_acc += mlp.score(testSet_features, testSet_labels)
+        scores[l] = avg_acc / n_Iter
+
+    opt_l = scores.get(max(scores))
+
     # train the classifier
     print("Training the classifier")
-    mlp = MLPClassifier(solver = 'sgd', alpha=1e-5, hidden_layer_sizes=(100,), random_state=1, verbose=10)
+    mlp = MLPClassifier(solver = 'sgd', alpha=1e-5, hidden_layer_sizes=(opt_n_h_l,), random_state=1, verbose=10)
     mlp.fit(trainSet_features, trainSet_labels)
 
     print("Training set score: %f" % mlp.score(trainSet_features, trainSet_labels))
