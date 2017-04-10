@@ -61,7 +61,7 @@ testSet_labels = np.asarray(testSet_labels)
 # # optimize hidden layers
 # print("Optimizing number of hidden layers")
 # scores_n_h_l = {}
-# n_Iter = 3
+# n_Iter = 5
 # val_per = 0.2
 # for n_h_l in np.arange(10, 310, 10):
 #     avg_acc = 0;
@@ -78,7 +78,7 @@ testSet_labels = np.asarray(testSet_labels)
 #         mlp.fit(trainX, trainY)
 #         avg_acc += mlp.score(valX, valY)
 #     scores_n_h_l[n_h_l] = avg_acc / n_Iter
-#     print("n_h_l=%f with acc= %f" % (n_h_l,scores_n_l_r[n_h_l]))
+#     print("n_h_l=%f with acc= %f" % (n_h_l,scores_n_h_l[n_h_l]))
 #
 # opt_n_h_l = max(scores_n_h_l, key=scores_n_h_l.get)
 # print("optimal number of hidden layers is %d" % opt_n_h_l)
@@ -87,12 +87,12 @@ testSet_labels = np.asarray(testSet_labels)
 # pickle.dump(data, f, 2)
 # f.close()
 
-opt_n_h_l = 220
+opt_n_h_l = 230
 
 # # optimize learning rate
 # print("Optimizing learning rate")
 # scores_l_r = {}
-# n_Iter = 3
+# n_Iter = 5
 # val_per = 0.2
 # for l_r in [0.3, 0.003, 0.001, 0.0003, 0.0001, 0.00003, 0.00001]:
 #     avg_acc = 0;
@@ -124,8 +124,8 @@ opt_l_r =  0.0003
 # print("Optimizing number of iterations")
 # train_loss = []
 # val_loss = []
-# max_iter = 1000
-# iter_tol = 2
+# max_iter = 100
+# iter_tol = 20
 #
 # val_per = 0.2
 # tmp = int(val_per*n_train_samples)
@@ -157,7 +157,7 @@ opt_l_r =  0.0003
 # data['train_loss'] = train_loss
 # data['val_loss'] = val_loss
 # data['opt_iter'] = opt_iter
-# f = open('variables.pkl', 'wb')
+# f = open('loss.pkl', 'wb')
 # pickle.dump(data, f, 2)
 # f.close()
 #
@@ -174,19 +174,21 @@ opt_iter = 26
 
 # optimize initial weights
 print("Optimizing initial weights")
-val_per = 0.1
 best_score = 0
-for i in np.arange(10):
+n_Iter = 100
+for i in np.arange(n_Iter):
     mlp = MLPClassifier(solver='sgd', alpha=1e-5, learning_rate_init=opt_l_r, hidden_layer_sizes=(opt_n_h_l,), max_iter=opt_iter, shuffle=True)
     scores = cross_val_score(mlp, trainSet_features, trainSet_labels, cv=3)
     cur_score = scores.mean()
     if cur_score>best_score:
+        best_score = cur_score
         best_mlp = mlp
 print("best score is %f" % best_score)
 
+# best_mlp = MLPClassifier(solver='sgd', alpha=1e-5, learning_rate_init=opt_l_r, hidden_layer_sizes=(opt_n_h_l,), max_iter=opt_iter, shuffle=True)
 # train the classifier
-
 print("Training the classifier")
+best_mlp.fit(trainSet_features,trainSet_labels)
 print("Training set score: %f" % best_mlp.score(trainSet_features, trainSet_labels))
 print("Test set score: %f" % best_mlp.score(testSet_features, testSet_labels))
 
