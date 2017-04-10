@@ -1,1 +1,2 @@
-0.932338
+Test accuracy with number of hidden layers 230, learning rate 0.0003, max number of iterations 26
+0.936071

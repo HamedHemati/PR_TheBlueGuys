@@ -175,7 +175,7 @@ opt_iter = 26
 # optimize initial weights
 print("Optimizing initial weights")
 best_score = 0
-n_Iter = 100
+n_Iter = 20
 for i in np.arange(n_Iter):
     mlp = MLPClassifier(solver='sgd', alpha=1e-5, learning_rate_init=opt_l_r, hidden_layer_sizes=(opt_n_h_l,), max_iter=opt_iter, shuffle=True)
     scores = cross_val_score(mlp, trainSet_features, trainSet_labels, cv=3)
