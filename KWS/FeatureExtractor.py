@@ -26,10 +26,19 @@ class FeatureExtractor():
             #add the features to the feature vector 
             f.append(self.getTrasitions(col))
             f.append(self.getBlackPixelFraction(col))
-            f.append(self.getBlackPixelFraction(UCn)/self.getBlackPixelFraction(LCn))
+            f.append(self.getBlackPixelFraction(UCn))
+            f.append(self.getBlackPixelFraction(LCn))
             f.append(self.getGradient(UCn,UCn_next))
             f.append(self.getGradient(LCn,LCn_next))    
-            
+    
+            #normalize f
+            norm = np.linalg.norm(f, ord=2)
+            if norm==0:
+                continue
+            else:
+                f = [el/float(norm) for el in f]
+            print(f)
+
             feat.append(f)
 
         return feat
@@ -45,13 +54,13 @@ class FeatureExtractor():
     
     def getTrasitions(self, col):
         tranCount = 0
-        for i in range(col.size-1):
+        for i in range(len(col)-1):
             tranCount += (col[i] ^ col[i+1])
 
         return tranCount    
 
     def getBlackPixelFraction(self, col):
-        return sum(sum(col))/float(col.size)
+        return sum(col)/float(col.size)
 
-    def getGradient(self, col1, col2)
+    def getGradient(self, col1, col2):
         return np.sum(np.abs(np.subtract(col1,col2)))
