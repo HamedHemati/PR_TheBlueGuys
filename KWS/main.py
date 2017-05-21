@@ -8,17 +8,29 @@ from scipy.spatial.distance import euclidean
 
 def runKWS(queryPath, imagePath, svgPath):
     query = Image.open(queryPath)
-    print "query size: ", query.size
     svc = SVGCropper()
     fe = FeatureExtractor()
+    result =[]
+    #set threshold here
+    threshold = 32  
 
+    print("Cropping the segments")
     keywordsList = svc.cropWords(imagePath, svgPath)
     fq = fe.getFeatureVector(query)
 
+    dists = []
+    i = 0
     for keyword in keywordsList:
         f = fe.getFeatureVector(keyword)
         dist, path = fastdtw(f, fq, dist=euclidean)
-        print "distance: ", dist
+        print "distance ",i,": ", dist
+        dists.append(dist)
+        i += 1
+
+    dists = np.array(dists)
+    matches = dists < threshold   
+    
+    return matches
         
 def main():
     queryPath = "query.jpg"
