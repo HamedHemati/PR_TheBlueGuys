@@ -6,8 +6,10 @@ import os
 
 class SVGCropper:
 
-    def cropWords(self,imgPath, svgPath, location):
-    
+    def cropWords(self,imgPath, svgPath, location="~/Pictures/Cropped/"):
+        #List of keywords to return
+        keywordsList = []
+
         threshold = 170
 
         #extract paths and store them in section_svg_strings
@@ -46,14 +48,18 @@ class SVGCropper:
             newImg = Image.fromarray(final)
             area = self.getBoundingBox(polygon)
             newImg = newImg.crop(area)
+            
+            """
             if not os.path.exists(location):
                 os.makedirs(location)
 
             filename = location + '/' + str(i) + '.jpg'
 
             newImg.save(filename)
-            print "Word ", i, " Cropped Successfuly"
-
+            """
+            keywordsList.append(newImg)
+            #print "Word ", i, " Cropped Successfuly"
+        return keywordsList
 
     #Converts SVG Path to Polygon
     def getPolygon(self, path):
