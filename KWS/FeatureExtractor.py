@@ -37,7 +37,6 @@ class FeatureExtractor():
                 continue
             else:
                 f = [el/float(norm) for el in f]
-            print(f)
 
             feat.append(f)
 
