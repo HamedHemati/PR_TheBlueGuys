@@ -3,10 +3,10 @@ function []=createData()
 i=1;
 j=1;
 truth=cell(30,5);
-files = dir('enrollment/*.txt');
+files = dir('enrollment_val/*.txt');
 % Import Originals
 for file = files'
-   fileID = fopen(strcat('enrollment/',file.name));
+   fileID = fopen(strcat('enrollment_val/',file.name));
    C = textscan(fileID,'%f');
    fclose(fileID);
 
@@ -22,9 +22,9 @@ end
 %Import Verification
 i=1;
 j=1;
-ver_files = dir('verification/*.txt');
+ver_files = dir('verification_val/*.txt');
 for ver_file = ver_files'
-   ver_fileID = fopen(strcat('verification/',ver_file.name));
+   ver_fileID = fopen(strcat('verification_val/',ver_file.name));
    Z = textscan(ver_fileID,'%f');
    fclose(ver_fileID);
 
@@ -38,11 +38,9 @@ for ver_file = ver_files'
     j=j+1;
 end
 
- fileID = fopen('gt.txt');
+ fileID = fopen('users_val.txt');
  scanned=textscan(fileID,'%s');
- sc=scanned{1,1};
- labels(:,1)=sc(1:2:end);
- labels(:,2)=sc(2:2:end);
+ labels=scanned{1,1};
  fclose(fileID);
 
 
