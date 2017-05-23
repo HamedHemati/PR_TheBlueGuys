@@ -37,7 +37,8 @@ def main():
     imagePath = "images/270.jpg"
     svgPath = "locations/270.svg"
 
-    runKWS(queryPath, imagePath,svgPath)
+    matches = runKWS(queryPath, imagePath,svgPath)
+    print matches
 
 
 main()    

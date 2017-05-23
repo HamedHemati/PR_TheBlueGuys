@@ -15,7 +15,7 @@ trainSet_features = []
 trainSet_labels = []
 n_test_samples = 0
 testSet_features = []
-testSet_labels = []
+# testSet_labels = []
 
 
 def read_csv_file():
@@ -34,15 +34,27 @@ def read_csv_file():
         print("Number of features is %d" % n_features)
     print("Train set loaded sucessfuly")
 
+    # use both train and test sets to predict the new mnist_test set
     with open('test.csv','rb') as csvFile:
         rd = csv.reader(csvFile)
         for row in rd:
             row_float = [float(i) for i in row]
-            testSet_labels.append(row_float.pop(0))
+            trainSet_labels.append(row_float.pop(0))
+            trainSet_features.append(row_float)
+
+        global n_test_samples
+        n_train_samples = len(trainSet_labels)
+        print("Number of test samples is %d" % n_train_samples)
+    print("Test set loaded sucessfuly")
+
+    with open('mnist_test.csv','rb') as csvFile:
+        rd = csv.reader(csvFile)
+        for row in rd:
+            row_float = [float(i) for i in row]
             testSet_features.append(row_float)
 
         global n_test_samples
-        n_test_samples = len(testSet_labels)
+        n_test_samples = len(testSet_features)
         print("Number of test samples is %d" % n_test_samples)
     print("Test set loaded sucessfuly")
 
@@ -56,7 +68,7 @@ read_csv_file()
 trainSet_features = np.asarray(trainSet_features)
 trainSet_labels = np.asarray(trainSet_labels)
 testSet_features = np.asarray(testSet_features)
-testSet_labels = np.asarray(testSet_labels)
+# testSet_labels = np.asarray(testSet_labels)
 
 # # optimize hidden layers
 # print("Optimizing number of hidden layers")
@@ -172,23 +184,48 @@ opt_l_r =  0.0003
 opt_iter = 26
 
 
-# optimize initial weights
-print("Optimizing initial weights")
-best_score = 0
-n_Iter = 20
-for i in np.arange(n_Iter):
-    mlp = MLPClassifier(solver='sgd', alpha=1e-5, learning_rate_init=opt_l_r, hidden_layer_sizes=(opt_n_h_l,), max_iter=opt_iter, shuffle=True)
-    scores = cross_val_score(mlp, trainSet_features, trainSet_labels, cv=3)
-    cur_score = scores.mean()
-    if cur_score>best_score:
-        best_score = cur_score
-        best_mlp = mlp
-print("best score is %f" % best_score)
+# # optimize initial weights
+# print("Optimizing initial weights")
+# best_score = 0
+# n_Iter = 20
+# for i in np.arange(n_Iter):
+#     print("iter %i" % i)
+#     mlp = MLPClassifier(solver='sgd', alpha=1e-5, learning_rate_init=opt_l_r, hidden_layer_sizes=(opt_n_h_l,), max_iter=opt_iter, shuffle=True)
+#     scores = cross_val_score(mlp, trainSet_features, trainSet_labels, cv=3)
+#     cur_score = scores.mean()
+#     if cur_score>best_score:
+#         best_score = cur_score
+#         best_mlp = mlp
+# print("best score is %f" % best_score)
 
 # best_mlp = MLPClassifier(solver='sgd', alpha=1e-5, learning_rate_init=opt_l_r, hidden_layer_sizes=(opt_n_h_l,), max_iter=opt_iter, shuffle=True)
-# train the classifier
-print("Training the classifier")
-best_mlp.fit(trainSet_features,trainSet_labels)
-print("Training set score: %f" % best_mlp.score(trainSet_features, trainSet_labels))
-print("Test set score: %f" % best_mlp.score(testSet_features, testSet_labels))
 
+filename = 'best_mlp.sav'
+filename2 = 'best_mlp2.sav'
+# load the model from disk
+best_mlp = pickle.load(open(filename, 'rb'))
+
+# train the classifier
+# print("Training the classifier")
+# best_mlp.fit(trainSet_features,trainSet_labels)
+# save best mlp to disk
+pickle.dump(best_mlp, open(filename2, 'wb'))
+
+print("Training set score: %f" % best_mlp.score(trainSet_features, trainSet_labels))
+# print("Test set score: %f" % best_mlp.score(testSet_features, testSet_labels))
+predictions = best_mlp.predict_proba(testSet_features)
+hard_predictions = best_mlp.predict(testSet_features)
+print("hard predictions")
+print(hard_predictions)
+
+csvfile  = open('mlp_test_predictions_probabilities.csv', "wb")
+csvwriter = csv.writer(csvfile)
+for i in range(0,len(predictions)):
+    csvwriter.writerow(predictions[i])
+csvfile.close()
+
+csvfile  = open('mlp_test_predictions_hard.csv', "wb")
+csvwriter = csv.writer(csvfile)
+for i in range(0,len(predictions)):
+    csvwriter.writerow([hard_predictions[i]])
+csvfile.close()
