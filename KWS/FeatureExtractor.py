@@ -1,6 +1,7 @@
 from PIL import Image
 import numpy as np
 
+#def. col : window of width 1
 
 class FeatureExtractor():
     def getFeatureVector(self, image):
@@ -24,20 +25,24 @@ class FeatureExtractor():
             #MODIFICATIONS NEEDED!!!!!
             
             #add the features to the feature vector 
-            f.append(self.getTrasitions(col))
             f.append(self.getBlackPixelFraction(col))
-            f.append(self.getBlackPixelFraction(UCn))
-            f.append(self.getBlackPixelFraction(LCn))
-            f.append(self.getGradient(UCn,UCn_next))
-            f.append(self.getGradient(LCn,LCn_next))    
+            f.append(self.getUpperBlackPixel(col))
+            f.append(self.getLowerBlackPixel(col))
+            f.append(self.getTrasitions(col))
+            #f.append(self.getBlackPixelFraction(UCn))
+            #f.append(self.getBlackPixelFraction(LCn))
+            f.append(self.getBlackPixelFractionUandL(UCn,LCn))
+            #f.append(self.getGradient(UCn,UCn_next))
+            #f.append(self.getGradient(LCn,LCn_next))    
     
             #normalize f
+            
             norm = np.linalg.norm(f, ord=2)
             if norm==0:
                 continue
             else:
                 f = [el/float(norm) for el in f]
-
+            
             feat.append(f)
 
         return feat
@@ -56,10 +61,40 @@ class FeatureExtractor():
         for i in range(len(col)-1):
             tranCount += (col[i] ^ col[i+1])
 
-        return tranCount    
+        return tranCount/10 
 
     def getBlackPixelFraction(self, col):
         return sum(col)/float(col.size)
+    
+    def getBlackPixelCount(self, col):
+        return 
+
+    def getBlackPixelFractionUandL(self, U, L):
+        if sum(L) == 0:
+            return 0
+        else:
+            
+            fu = sum(U)/float(U.size) 
+            fl = sum(L)/float(L.size)
+            return fu/fl 
+
+
 
     def getGradient(self, col1, col2):
         return np.sum(np.abs(np.subtract(col1,col2)))
+
+    def getUpperBlackPixel(self, col):
+        pos = 1
+        for i in range(col.size):
+            if col[i]==1:
+                pos = i/float(col.size)
+                break
+        return  pos
+
+    def getLowerBlackPixel(self, col):
+        pos = 1
+        for i in range(col.size-1,0,-1):
+            if col[i]==1:
+                pos = i/float(col.size)
+                break
+        return  pos  

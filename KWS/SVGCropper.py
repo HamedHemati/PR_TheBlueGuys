@@ -25,6 +25,7 @@ class SVGCropper:
         #for each section do the cropping
         for i in range(len(section_svg_strings)):
             path = parse_path(section_svg_strings[i])
+            sectionID = attributes[i]['id']
             #path = parse_path(p)
             polygon = self.getPolygon(path) 
             
@@ -57,9 +58,60 @@ class SVGCropper:
 
             newImg.save(filename)
             """
-            keywordsList.append(newImg)
+            keywordsList.append([newImg,sectionID])
             #print "Word ", i, " Cropped Successfuly"
         return keywordsList
+    
+    def getQueryImage(self, imgLoc, svgLoc, queryString):
+        s = queryString.split(',')
+        ss = s[1].split('-')
+        filename = ss[0]
+
+        imgPath = imgLoc+filename+".jpg"
+        svgPath = svgLoc+filename+".svg"
+
+
+        threshold = 170
+
+        #extract paths and store them in section_svg_strings
+        paths, attributes = svg2paths(svgPath)
+        attrLine = 0
+        for i in range(len(attributes)):
+            if attributes[i]['id'] == s[1]:
+                attrLine=i
+                break;
+                
+        section_svg_strings = attributes[attrLine]['d']
+        
+        #load the image for processing
+        img = Image.open(imgPath)
+        img = np.asarray(img)
+       
+        path = parse_path(section_svg_strings)
+        
+        polygon = self.getPolygon(path) 
+        maskImg = Image.new('L', (img.shape[1], img.shape[0]), 0)
+        maskImgBound = Image.new('L', (img.shape[1], img.shape[0]), 255)
+        ImageDraw.Draw(maskImg).polygon(polygon, outline=1, fill=1)
+        ImageDraw.Draw(maskImgBound).polygon(polygon, outline=0, fill=0)        
+        mask = np.array(maskImg)
+        maskBound = np.array(maskImgBound)
+
+        final = np.multiply(img, mask)
+        final = np.add(final,maskBound)
+
+        #binarize the final image
+        low_value_indices = final < threshold
+        high_value_indices = final >= threshold
+        final[low_value_indices] = 0
+        final[high_value_indices] = 255
+        newImg = Image.fromarray(final)
+        area = self.getBoundingBox(polygon)
+        newImg = newImg.crop(area)
+
+        return newImg
+
+
 
     #Converts SVG Path to Polygon
     def getPolygon(self, path):
